@@ -1,61 +1,61 @@
 ```mermaid
 classDiagram
-    %% 1. 데이터 구조 (DTO)
-    class Product {
-        <<dataclass>>
-        +str code
-        +str name
-        +int price
-        +str category
+    note "딕셔너리 구조 개선 버전 (전략 패턴 적용 전)"
+
+    %% 1. 데이터 스키마 (암시적 구조)
+    class Product_Dict {
+        <<Dictionary>>
+        key: code
+        value: {name, price, category}
     }
 
-    class CartItem {
-        <<dataclass>>
-        +Product product
-        +int qty
-        +total_price() int
+    class CartItem_Dict {
+        <<Dictionary>>
+        code
+        name
+        unit_price
+        qty
+        total_price
     }
 
-    %% 2. 비즈니스 로직 및 저장소
-    class ProductRepository {
-        -dict _products
-        +get(code) Product
-        +get_all() List~Product~
+    %% 2. 전역 데이터 저장소
+    class Global_Store {
+        <<Global Scope>>
+        +PRODUCTS_DB : Dict
+        +cart : List
+        +DISCOUNT_RATE : float
     }
 
-    class CartService {
-        -List~CartItem~ _items
-        -float discount_rate
-        +add_item(product, qty)
-        +remove_item(index) str
-        +get_items() List~CartItem~
-        +calculate_final_price(is_vip) tuple
-        +clear()
+    %% 3. 비즈니스 로직 (순수 함수 그룹)
+    class Service_Logic {
+        <<Internal Helper Functions>>
+        -_get_product_data(code)
+        -_create_cart_item(code, qty)
+        -_calculate_cart_summary(cart, is_vip)
     }
 
-    %% 3. 프레젠테이션 (UI 함수 모음)
+    %% 4. 프레젠테이션 (UI 함수 그룹)
     class UI_Presentation {
-        <<Module>>
+        <<Public Functions>>
         +print_product_list()
         +add_to_cart()
-        +print_cart()
         +remove_from_cart()
         +checkout()
         +main_menu()
     }
 
     %% 관계 정의 (Relationships)
-    
-    %% CartItem은 Product를 포함함 (Association)
-    CartItem o-- Product : contains
-    
-    %% Repository는 Product를 관리/반환함 (Dependency)
-    ProductRepository ..> Product : returns
 
-    %% Service는 CartItem 리스트를 관리함 (Composition)
-    CartService *-- CartItem : manages list
+    %% UI는 복잡한 계산이나 객체 생성을 Service_Logic에 맡김
+    UI_Presentation --> Service_Logic : 호출 (계산/생성 위임)
 
-    %% UI는 Service와 Repository를 사용함 (Dependency/Unidirectional)
-    UI_Presentation --> CartService : uses
-    UI_Presentation --> ProductRepository : uses
+    %% Service_Logic은 데이터를 조회함 (읽기 전용에 가까움)
+    Service_Logic ..> Global_Store : PRODUCTS_DB 조회
+
+    %% UI는 상태를 변경함 (쓰기 작업)
+    UI_Presentation ..> Global_Store : cart에 append / pop
+
+    %% 데이터 포함 관계
+    Global_Store *-- Product_Dict : contains values
+    Global_Store *-- CartItem_Dict : contains items
 ```
