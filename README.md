@@ -5,8 +5,8 @@ classDiagram
     %% 1. 데이터 스키마 (암시적 구조)
     class Product_Dict {
         <<Dictionary>>
-        key: code
-        value: {name, price, category}
+        key : code
+        value : "{name, price, category}"
     }
 
     class CartItem_Dict {
@@ -46,16 +46,10 @@ classDiagram
 
     %% 관계 정의 (Relationships)
 
-    %% UI는 복잡한 계산이나 객체 생성을 Service_Logic에 맡김
     UI_Presentation --> Service_Logic : 호출 (계산/생성 위임)
-
-    %% Service_Logic은 데이터를 조회함 (읽기 전용에 가까움)
     Service_Logic ..> Global_Store : PRODUCTS_DB 조회
-
-    %% UI는 상태를 변경함 (쓰기 작업)
     UI_Presentation ..> Global_Store : cart에 append / pop
 
-    %% 데이터 포함 관계
     Global_Store *-- Product_Dict : contains values
     Global_Store *-- CartItem_Dict : contains items
 ```
