@@ -6,7 +6,7 @@ classDiagram
     class Product_Dict {
         <<Dictionary>>
         key : code
-        value : "{name, price, category}"
+        value : name, price, category
     }
 
     class CartItem_Dict {
