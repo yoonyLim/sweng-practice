@@ -1,3 +1,4 @@
+```mermaid
 flowchart TD
     Start([시작: 프레임 업데이트]) --> CheckLeft{왼손이 먼저 감지되었는가?}
 
@@ -43,3 +44,4 @@ flowchart TD
     style End fill:#f9f,stroke:#333,stroke-width:2px
     style SetLeftRef fill:#dfd,stroke:#333
     style SetRightRef fill:#dfd,stroke:#333
+```
