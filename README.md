@@ -4,7 +4,7 @@ flowchart TD
 
     %% Condition 1: Left Hand is Primary
     CheckLeft -- Yes --> SetLeftRef["기준점 설정: 왼손 손목"<br>is_left_hand_wrist_based = True]
-    SetLeftRef --> CalcLeft[왼손 좌표 계산<br>(기준: 왼손 손목)]
+    SetLeftRef --> CalcLeft["왼손 좌표 계산"<br>"(기준: 왼손 손목)"]
     CalcLeft --> CheckRightSub{오른손도 감지되었는가?<br>(Condition 1-1)}
 
     %% Condition 1-1 True
