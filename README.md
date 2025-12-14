@@ -1,55 +1,45 @@
-```mermaid
-classDiagram
-    note "딕셔너리 구조 개선 버전 (전략 패턴 적용 전)"
+flowchart TD
+    Start([시작: 프레임 업데이트]) --> CheckLeft{왼손이 먼저 감지되었는가?}
 
-    %% 1. 데이터 스키마 (암시적 구조)
-    class Product_Dict {
-        <<Dictionary>>
-        key : code
-        value : name, price, category
-    }
+    %% Condition 1: Left Hand is Primary
+    CheckLeft -- Yes --> SetLeftRef[기준점 설정: 왼손 손목<br>is_left_hand_wrist_based = True]
+    SetLeftRef --> CalcLeft[왼손 좌표 계산<br>(기준: 왼손 손목)]
+    CalcLeft --> CheckRightSub{오른손도 감지되었는가?<br>(Condition 1-1)}
 
-    class CartItem_Dict {
-        <<Dictionary>>
-        code
-        name
-        unit_price
-        qty
-        total_price
-    }
+    %% Condition 1-1 True
+    CheckRightSub -- Yes --> CalcRightRelLeft[오른손 좌표 계산<br>(기준: 왼손 손목)]
+    
+    %% Condition 1-1 False
+    CheckRightSub -- No --> KeepRightPrev[오른손 좌표 유지<br>(이전 프레임 값 or 0)]
 
-    %% 2. 전역 데이터 저장소
-    class Global_Store {
-        <<Global Scope>>
-        +PRODUCTS_DB : Dict
-        +cart : List
-        +DISCOUNT_RATE : float
-    }
+    %% Condition 2: Right Hand is Primary (Left was False)
+    CheckLeft -- No --> CheckRight{오른손이 감지되었는가?<br>(Condition 2)}
 
-    %% 3. 비즈니스 로직 (순수 함수 그룹)
-    class Service_Logic {
-        <<Internal Helper Functions>>
-        -_get_product_data(code)
-        -_create_cart_item(code, qty)
-        -_calculate_cart_summary(cart, is_vip)
-    }
+    %% Condition 2 True
+    CheckRight -- Yes --> SetRightRef[기준점 설정: 오른손 손목<br>is_left_hand_wrist_based = False]
+    SetRightRef --> CalcRight[오른손 좌표 계산<br>(기준: 오른손 손목)]
+    CalcRight --> CheckLeftSub{왼손도 감지되었는가?<br>(Condition 2-1)}
 
-    %% 4. 프레젠테이션 (UI 함수 그룹)
-    class UI_Presentation {
-        <<Public Functions>>
-        +print_product_list()
-        +add_to_cart()
-        +remove_from_cart()
-        +checkout()
-        +main_menu()
-    }
+    %% Condition 2-1 True
+    CheckLeftSub -- Yes --> CalcLeftRelRight[왼손 좌표 계산<br>(기준: 오른손 손목)]
 
-    %% 관계 정의 (Relationships)
+    %% Condition 2-1 False
+    CheckLeftSub -- No --> KeepLeftPrev[왼손 좌표 유지<br>(이전 프레임 값 or 0)]
 
-    UI_Presentation --> Service_Logic : 호출 (계산/생성 위임)
-    Service_Logic ..> Global_Store : PRODUCTS_DB 조회
-    UI_Presentation ..> Global_Store : cart에 append / pop
+    %% Condition 3: No Hands
+    CheckRight -- No --> NoHands[좌표 전송 안 함<br>(Condition 3)]
 
-    Global_Store *-- Product_Dict : contains values
-    Global_Store *-- CartItem_Dict : contains items
-```
+    %% End nodes
+    CalcRightRelLeft --> SendData([데이터 전송])
+    KeepRightPrev --> SendData
+    CalcLeftRelRight --> SendData
+    KeepLeftPrev --> SendData
+    NoHands --> End([종료 / 다음 프레임 대기])
+    SendData --> End
+
+    %% Styling
+    style Start fill:#f9f,stroke:#333,stroke-width:2px
+    style SendData fill:#bbf,stroke:#333,stroke-width:2px
+    style End fill:#f9f,stroke:#333,stroke-width:2px
+    style SetLeftRef fill:#dfd,stroke:#333
+    style SetRightRef fill:#dfd,stroke:#333
